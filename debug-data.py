@@ -1,5 +1,8 @@
 import numpy as np
 import skimage
+import skimage.io
+import skimage.draw
+import skimage.morphology
 
 def random_polygon(w=10, h=10, sides=5):
     img = np.zeros((h, w), dtype=np.uint8)
@@ -17,7 +20,9 @@ def random_textured_polygon(w=256, h=256, sides=5):
 	grass_small = skimage.transform.resize(grass_image[:,:grass_image.shape[0]], (h, w))
 
 	mask = random_polygon(w, h, 5)
+	chull = skimage.morphology.convex_hull_image(mask)
+	mask[chull] = 1
 
-	mask3 = mask[:,:,np.newaxis]
-	img = mask3*grass_small + (1 - mask3)*stones_small
+	mask = mask[:,:,np.newaxis]
+	img = mask*grass_small + (1 - mask)*stones_small
 	return img, mask
