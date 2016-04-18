@@ -4,6 +4,7 @@ import skimage.io
 import skimage.draw
 import skimage.transform
 import skimage.morphology
+import skimage.color
 
 def random_polygon(w=10, h=10, sides=5):
     img = np.zeros((h, w), dtype=np.uint8)
@@ -27,3 +28,15 @@ def random_textured_polygon(w=256, h=256, sides=5):
 	mask = mask[:,:,np.newaxis]
 	img = mask*grass_small + (1 - mask)*stones_small
 	return img, mask
+
+def generate_batch(w=128, h=128, minibatch_size=10, sides=5):
+	input_data = np.zeros([minibatch_size, h, w, 1])
+	label_data = np.zeros([minibatch_size, h, w, 1], dtype=np.int64)
+
+	for i in range(minibatch_size):
+		img, mask = random_textured_polygon(w, h, sides)
+		img_gray = skimage.color.rgb2gray(img)
+		input_data[i, :, :, 0] = 2*(img_gray / 255) - 1
+		label_data[i, :, :] = mask
+
+	return input_data, label_data
