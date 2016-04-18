@@ -2,6 +2,7 @@ import numpy as np
 import skimage
 import skimage.io
 import skimage.draw
+import skimage.transform
 import skimage.morphology
 
 def random_polygon(w=10, h=10, sides=5):
