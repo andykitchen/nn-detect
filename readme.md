@@ -2,7 +2,6 @@ To Do
 =====
 
 - Write validation routines
-- Write checkpoint routines
 - Visualise weights as the NN trains
 - Visualise activations for individial images
   - Use t-SNE on activations
