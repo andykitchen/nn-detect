@@ -4,9 +4,9 @@ import numpy as np
 import tensorflow as tf
 
 minibatch_size = 16
+
 input_size = 128
 input_channels = 1
-# input_channels = 3
 
 conv1_size = 5
 conv1_stride = 1
@@ -22,12 +22,25 @@ report_frequency = 10
 checkpoint_frequency = 10
 random_init_stddev = 1e-4
 
+validation_frequency = 10
+validation_batches = 8
+
 flat_size = minibatch_size * input_size * input_size
 
 random_seed = 42
+validation_random_seed = 64
 
 log_path = '/tmp/nn-detect-log'
 checkpoint_base_path = log_path + '/checkpoint'
+
+
+def get_validation_data(fg, bg):
+	np.random.seed(validation_random_seed)
+	validation_data = []
+	for i in range(validation_batches):
+		validation_data.append(debug_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size))
+	return validation_data
+
 
 np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
@@ -63,7 +76,13 @@ with tf.Session() as sess:
 
 		loss_raw = tf.nn.sparse_softmax_cross_entropy_with_logits(output_logits_flat, labels_flat, name='xentropy')
 		loss = tf.reduce_mean(loss_raw)
-		tf.scalar_summary("loss", loss)
+		tf.scalar_summary('loss', loss)
+
+	with tf.name_scope('accuracy') as scope:
+		predictions = tf.argmax(output_pr, dimension=3)
+		predictions_reshaped = tf.reshape(predictions, [minibatch_size, input_size, input_size, 1])
+		correct_predictions = tf.to_float(tf.equal(labels, predictions_reshaped))
+		accuracy = tf.reduce_mean(correct_predictions)
 
 
 	trainable_vars = tf.trainable_variables()
@@ -89,10 +108,9 @@ with tf.Session() as sess:
 	summary_op = tf.merge_all_summaries()
 
 	fg, bg = debug_data.load_default_textures(input_size, input_size)
+	validation_data = get_validation_data(fg, bg)
 
 	for i in xrange(starting_iteration, num_iterations):
-		# input_data, label_data = debug_data.generate_easy_batch(w=input_size, h=input_size, minibatch_size=minibatch_size)
-		# input_data, label_data = debug_data.generate_color_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size)
 		input_data, label_data = debug_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size)
 		feed = {inputs: input_data, labels: label_data}
 		_, summary_value, loss_value = sess.run([train_op, summary_op, loss], feed_dict=feed)
@@ -106,3 +124,12 @@ with tf.Session() as sess:
 		if i % checkpoint_frequency == 0:
 			checkpoint_path = saver.save(sess, checkpoint_base_path, global_step=i)
 			print "checkpointed:", checkpoint_path
+
+		if i % validation_frequency == 0:
+			accuracy_values = []
+			for validation_input_data, validation_label_data in validation_data:
+				feed = {inputs: validation_input_data, labels: validation_label_data}
+				accuracy_value = sess.run(accuracy, feed_dict=feed)
+				accuracy_values.append(accuracy_value)
+
+			print "iteration:", i, "validation accuracy:", np.array(accuracy_value).mean()
