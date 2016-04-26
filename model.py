@@ -121,10 +121,6 @@ with tf.Session() as sess:
 		if i % report_frequency == 0:
 			print "iteration:", i, "loss:", loss_value
 
-		if i % checkpoint_frequency == 0:
-			checkpoint_path = saver.save(sess, checkpoint_base_path, global_step=i)
-			print "checkpointed:", checkpoint_path
-
 		if i % validation_frequency == 0:
 			accuracy_values = []
 			for validation_input_data, validation_label_data in validation_data:
@@ -133,3 +129,7 @@ with tf.Session() as sess:
 				accuracy_values.append(accuracy_value)
 
 			print "iteration:", i, "validation accuracy:", np.array(accuracy_value).mean()
+
+		if i % checkpoint_frequency == 0:
+			checkpoint_path = saver.save(sess, checkpoint_base_path, global_step=i)
+			print "checkpointed:", checkpoint_path
