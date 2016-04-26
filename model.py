@@ -1,31 +1,19 @@
-import debug_data
-
 import numpy as np
 import tensorflow as tf
 
-minibatch_size = 16
+import debug_data
+import nn_graph
 
 input_size = 128
-input_channels = 1
-
-conv1_size = 5
-conv1_stride = 1
-conv1_features = 16
-
-output_conv_size = 5
-output_stride = 1
-output_features = 2
+minibatch_size = 16
 
 num_iterations = 1000
 learning_rate = 0.1
 report_frequency = 10
 checkpoint_frequency = 10
-random_init_stddev = 1e-4
 
 validation_frequency = 10
 validation_batches = 8
-
-flat_size = minibatch_size * input_size * input_size
 
 random_seed = 42
 validation_random_seed = 64
@@ -46,44 +34,7 @@ np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
 
 with tf.Session() as sess:
-	inputs = tf.placeholder(tf.float32, shape=[minibatch_size, input_size, input_size, input_channels], name='inputs')
-	labels = tf.placeholder(tf.int64, shape=[minibatch_size, input_size, input_size, 1], name='labels')
-
-	with tf.name_scope('conv1') as scope:
-		conv1_init     = tf.truncated_normal([conv1_size, conv1_size, input_channels, conv1_features], stddev=random_init_stddev, dtype=tf.float32)
-		conv1_weights  = tf.Variable(conv1_init, name='weights')
-		conv1_bias     = tf.Variable(tf.zeros([conv1_features], dtype=np.float32), name='bias')
-
-		conv1_y        = tf.nn.conv2d(inputs, conv1_weights, [1, conv1_stride, conv1_stride, 1], padding='SAME', name='y')
-		conv1_bias     = tf.nn.bias_add(conv1_y, conv1_bias)
-		conv1_activity = tf.nn.relu(conv1_bias , name='activity')
-
-	with tf.name_scope('output') as scope:
-		output_init    = tf.truncated_normal([output_conv_size, output_conv_size, conv1_features, output_features], stddev=random_init_stddev, dtype=tf.float32)
-		output_weights = tf.Variable(output_init, name='weights')
-		output_bias    = tf.Variable(tf.zeros([output_features], dtype=np.float32), name='bias')
-
-		output_y       = tf.nn.conv2d(conv1_activity, output_weights, [1, output_stride, output_stride, 1], padding='SAME', name='y')
-		output_logits  = output_y + output_bias
-
-		output_logits_flat = tf.reshape(output_logits, [flat_size, output_features])
-		output_pr_flat = tf.nn.softmax(output_logits_flat)
-		output_pr      = tf.reshape(output_pr_flat, [minibatch_size, input_size, input_size, output_features])
-
-	with tf.name_scope('loss') as scope:
-		output_logits_flat = tf.reshape(output_logits, [flat_size, output_features])
-		labels_flat = tf.reshape(labels, [flat_size])
-
-		loss_raw = tf.nn.sparse_softmax_cross_entropy_with_logits(output_logits_flat, labels_flat, name='xentropy')
-		loss = tf.reduce_mean(loss_raw)
-		tf.scalar_summary('loss', loss)
-
-	with tf.name_scope('accuracy') as scope:
-		predictions = tf.argmax(output_pr, dimension=3)
-		predictions_reshaped = tf.reshape(predictions, [minibatch_size, input_size, input_size, 1])
-		correct_predictions = tf.to_float(tf.equal(labels, predictions_reshaped))
-		accuracy = tf.reduce_mean(correct_predictions)
-
+	inputs, labels, output_pr, loss, accuracy = nn_graph.build_graph(input_size, minibatch_size)
 
 	trainable_vars = tf.trainable_variables()
 
@@ -110,7 +61,7 @@ with tf.Session() as sess:
 	fg, bg = debug_data.load_default_textures(input_size, input_size)
 	validation_data = get_validation_data(fg, bg)
 
-	for i in xrange(starting_iteration, num_iterations):
+	for i in xrange(starting_iteration, num_iterations + 1):
 		input_data, label_data = debug_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size)
 		feed = {inputs: input_data, labels: label_data}
 		_, summary_value, loss_value = sess.run([train_op, summary_op, loss], feed_dict=feed)
