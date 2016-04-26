@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-import debug_data
+import nn_generate_data
 import nn_graph
 
 input_size = 128
@@ -26,7 +26,7 @@ def get_validation_data(fg, bg):
 	np.random.seed(validation_random_seed)
 	validation_data = []
 	for i in range(validation_batches):
-		validation_data.append(debug_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size))
+		validation_data.append(nn_generate_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size))
 	return validation_data
 
 
@@ -58,11 +58,11 @@ with tf.Session() as sess:
 
 	summary_op = tf.merge_all_summaries()
 
-	fg, bg = debug_data.load_default_textures(input_size, input_size)
+	fg, bg = nn_generate_data.load_default_textures(input_size, input_size)
 	validation_data = get_validation_data(fg, bg)
 
 	for i in xrange(starting_iteration, num_iterations + 1):
-		input_data, label_data = debug_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size)
+		input_data, label_data = nn_generate_data.generate_grayscale_batch(fg, bg, w=input_size, h=input_size, minibatch_size=minibatch_size)
 		feed = {inputs: input_data, labels: label_data}
 		_, summary_value, loss_value = sess.run([train_op, summary_op, loss], feed_dict=feed)
 
