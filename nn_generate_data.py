@@ -25,6 +25,17 @@ def random_textured_polygon(fg, bg, w=128, h=128, sides=5):
 	return img, mask
 
 
+def random_textured_polygons(fg, bg, w=128, h=128, sides=5, count=3):
+	masks = np.zeros((h, w), dtype=np.uint8)
+	for i in range(count):
+		img, mask = random_textured_polygon(fg, bg, w, h, sides)
+		mask = mask[:,:,0]
+		masks[mask.astype(bool)] = 1
+	masks = masks[:,:,np.newaxis]
+	img = masks*fg + (1 - masks)*bg
+	return img, masks
+
+
 def load_default_textures(w, h):
 	grass_image  = skimage.io.imread('resources/grass.jpg')
 	stones_image = skimage.io.imread('resources/stones.jpg')
@@ -71,7 +82,8 @@ def generate_grayscale_batch(fg, bg, w=128, h=128, minibatch_size=10, sides=5):
 	label_data = np.zeros([minibatch_size, h, w, 1], dtype=np.int64)
 
 	for i in range(minibatch_size):
-		img, mask = random_textured_polygon(fg, bg, w, h, sides)
+#		img, mask = random_textured_polygon(fg, bg, w, h, sides)
+		img, mask = random_textured_polygons(fg, bg, w, h, sides)
 		img_gray = skimage.color.rgb2gray(img)
 		input_data[i, :, :, 0] = img_gray
 		label_data[i, :, :] = mask
