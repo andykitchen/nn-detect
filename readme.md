@@ -1,9 +1,8 @@
 To Do
 =====
-
-- Refactor for easier interactive usage in repl
+- Try feeding larger image (1024 x 1024) with mulitple grass patches
 - Visualise weights as the NN trains
-- Visualise activations for individial images
+- Visualise activations for individual images
   - Use t-SNE on activations
 - Deeper architecture
 - Real data
