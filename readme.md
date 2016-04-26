@@ -1,7 +1,7 @@
 To Do
 =====
 
-- Write validation routines
+- Refactor for easier interactive usage in repl
 - Visualise weights as the NN trains
 - Visualise activations for individial images
   - Use t-SNE on activations
