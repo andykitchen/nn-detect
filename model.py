@@ -34,7 +34,7 @@ np.random.seed(random_seed)
 tf.set_random_seed(random_seed)
 
 with tf.Session() as sess:
-	inputs, labels, output_pr, loss, accuracy = nn_graph.build_graph(input_size, minibatch_size)
+	inputs, labels, output_pr, loss, accuracy, conv1_weights = nn_graph.build_graph(input_size, minibatch_size)
 
 	trainable_vars = tf.trainable_variables()
 

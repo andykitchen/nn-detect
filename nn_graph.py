@@ -33,7 +33,7 @@ def build_graph(input_size, minibatch_size):
 		output_bias    = tf.Variable(tf.zeros([output_features], dtype=tf.float32), name='bias')
 
 		output_y       = tf.nn.conv2d(conv1_activity, output_weights, [1, output_stride, output_stride, 1], padding='SAME', name='y')
-		output_logits  = output_y + output_bias
+		output_logits  = tf.nn.bias_add(output_y, output_bias)
 
 		output_logits_flat = tf.reshape(output_logits, [flat_size, output_features])
 		output_pr_flat = tf.nn.softmax(output_logits_flat)
@@ -53,4 +53,4 @@ def build_graph(input_size, minibatch_size):
 		correct_predictions = tf.to_float(tf.equal(labels, predictions_reshaped))
 		accuracy = tf.reduce_mean(correct_predictions)
 
-	return inputs, labels, output_pr, loss, accuracy
+	return inputs, labels, output_pr, loss, accuracy, conv1_weights
