@@ -35,6 +35,11 @@ def load_default_textures(w, h):
 	return grass_small, stones_small
 
 
+def scale_images(images):
+	np.add(images, -.5, out=images)
+	np.multiply(images, 4, out=images)
+
+
 def generate_easy_batch(w=128, h=128, minibatch_size=10, sides=5):
 	input_data = np.zeros([minibatch_size, h, w, 1], dtype=np.float32)
 	label_data = np.zeros([minibatch_size, h, w, 1], dtype=np.int64)
@@ -53,8 +58,10 @@ def generate_color_batch(fg, bg, w=128, h=128, minibatch_size=10, sides=5):
 
 	for i in range(minibatch_size):
 		img, mask = random_textured_polygon(fg, bg, w, h, sides)
-		input_data[i, :, :] = 2.*img - 1.
+		input_data[i, :, :] = img
 		label_data[i, :, :] = mask
+
+	scale_images(input_data)
 
 	return input_data, label_data
 
@@ -66,7 +73,9 @@ def generate_grayscale_batch(fg, bg, w=128, h=128, minibatch_size=10, sides=5):
 	for i in range(minibatch_size):
 		img, mask = random_textured_polygon(fg, bg, w, h, sides)
 		img_gray = skimage.color.rgb2gray(img)
-		input_data[i, :, :, 0] = 2.*img_gray - 1.
+		input_data[i, :, :, 0] = img_gray
 		label_data[i, :, :] = mask
+
+	scale_images(input_data)
 
 	return input_data, label_data
