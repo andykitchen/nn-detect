@@ -26,8 +26,8 @@ def random_textured_polygon(fg, bg, w=128, h=128, sides=5):
 
 
 def load_default_textures(w, h):
-	grass_image  = skimage.io.imread('grass.jpg')
-	stones_image = skimage.io.imread('stones.jpg')
+	grass_image  = skimage.io.imread('resources/grass.jpg')
+	stones_image = skimage.io.imread('resources/stones.jpg')
 
 	stones_small = skimage.transform.resize(stones_image[:,:stones_image.shape[0]], (h, w))
 	grass_small  = skimage.transform.resize(grass_image[:,:grass_image.shape[0]], (h, w))
