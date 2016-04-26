@@ -106,7 +106,3 @@ with tf.Session() as sess:
 		if i % checkpoint_frequency == 0:
 			checkpoint_path = saver.save(sess, checkpoint_base_path, global_step=i)
 			print "checkpointed:", checkpoint_path
-
-		# ...save current loss
-		# if 50 iterations have happened
-		#    save checkpoint
