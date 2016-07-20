@@ -34,7 +34,7 @@ while capture.isOpened():
 
   if success:
     frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    frame_small = cv2.resize(frame_gray, (128, 128))
+    frame_small = cv2.resize(frame_gray, (input_size, input_size))
     cv2.imshow('video', frame_small)
 
     output_value =  process_frame(frame_small)
