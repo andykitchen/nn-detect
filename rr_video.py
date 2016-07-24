@@ -3,6 +3,16 @@ import numpy as np
 import tensorflow as tf
 import socket
 
+video_output = True
+
+from time import time
+time_next  = time()
+
+if video_output:
+  time_delay = 0.2
+else:
+  time_delay = 0.05
+
 import rr_graph
 
 udp_host = "localhost"
@@ -22,7 +32,7 @@ inputs, labels, output, loss = rr_graph.build_graph(input_size=input_size, minib
 
 sess = tf.Session()
 saver = tf.train.Saver()
-saver.restore(sess, '/tmp/rr-detect-log/checkpoint-1000')
+saver.restore(sess, './rr-detect-log/checkpoint-1000')
 
 def process_frame(frame):
   feed = {inputs: frame[np.newaxis, :, :, np.newaxis]}
@@ -33,13 +43,21 @@ while capture.isOpened():
   success, frame = capture.read()
 
   if success:
-    frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    frame_small = cv2.resize(frame_gray, (input_size, input_size))
-    cv2.imshow('video', frame_small)
+    time_now = time()
+    if time_now >= time_next:
+      time_next = time_now + time_delay
 
-    output_value =  process_frame(frame_small)
-    print output_value
-    sock.sendto(output_value.astype('|S6'), (udp_host, udp_port))
+      frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      frame_small = cv2.resize(frame_gray, (128, 128 + 95))
+      frame_small = cv2.flip(frame_small, 0)  # horizontal flip
+      frame_small = cv2.flip(frame_small, 1)  # vertical flip
+      frame_small = frame_small[-128:,]
+      if video_output:
+        cv2.imshow('video', frame_small)
+
+      output_value =  process_frame(frame_small)
+      print output_value
+      sock.sendto('ai:' + output_value.astype('|S6'), (udp_host, udp_port))
 
     ch = cv2.waitKey(key_wait_time) & 0xFF
     if ch == 27:
