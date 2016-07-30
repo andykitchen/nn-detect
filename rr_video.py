@@ -47,11 +47,12 @@ while capture.isOpened():
     if time_now >= time_next:
       time_next = time_now + time_delay
 
-      frame_gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-      frame_small = cv2.resize(frame_gray, (128, 128 + 95))
+      frame_gray  = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+      frame_small = cv2.resize(frame_gray, (128, 128))
+#     frame_small = cv2.resize(frame_gray, (128, 128 + 95))
       frame_small = cv2.flip(frame_small, 0)  # horizontal flip
       frame_small = cv2.flip(frame_small, 1)  # vertical flip
-      frame_small = frame_small[-128:,]
+#     frame_small = frame_small[-128:,]
       if video_output:
         cv2.imshow('video', frame_small)
 
